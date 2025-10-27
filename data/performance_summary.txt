@@ -1,0 +1,46 @@
+
+================================================================================
+                    MAZE LEARNING - PERFORMANCE COMPARISON
+================================================================================
+Generated: 2025-10-27 16:50:59
+Maze Configuration: 6x6 grid, 10.0% wall probability
+Minimum Possible Steps: 10
+================================================================================
+
+
+Metric                              Maze 1          Maze 2          Maze 3         
+--------------------------------------------------------------------------------
+Method                              Q-Learning      Q-Learning+Hist DQN            
+Training Episodes                   1000            1000            1000           
+Training Time (seconds)             0.19            0.06            9.66           
+                                                                                   
+=== EVALUATION RESULTS (100 test episodes) ===                                                
+Success Rate (%)                    100             100             100            
+Avg Steps to Goal                   10.00           10.00           10.01          
+Min Steps                           10              10              10             
+Max Steps                           10              10              11             
+Median Steps                        10.00           10.00           10.00          
+                                                                                   
+Avg Reward (last 100 episodes)      79.02           81.64           88.10          
+
+================================================================================
+
+ANALYSIS & INSIGHTS:
+
+• Highest Success Rate: 100% (Maze1) (Maze2) (Maze3)
+• Lowest Avg Steps: 10.00 (Maze1) (Maze2) (Maze3)
+
+• Training Efficiency:
+  - Fastest training: Maze2 (0.06s)
+
+• Method Comparison:
+  - Maze 1 (Standard Q-Learning): Baseline with custom exploration strategy
+  - Maze 2 (Historical Data): Leverages pre-collected trajectories for faster learning
+  - Maze 3 (DQN): Neural network-based approach with experience replay
+
+================================================================================
+Files Generated:
+  • data/rewards_maze1.npy, data/rewards_maze2.npy, data/rewards_maze3.npy
+  • plots/rewards_maze1.png, plots/rewards_maze2.png, plots/rewards_maze3.png
+  • data/performance_summary.txt (this file)
+================================================================================
