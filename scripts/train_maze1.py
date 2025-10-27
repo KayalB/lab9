@@ -17,14 +17,28 @@ def train():
         state = env.reset()
         total_reward = 0
 
-        for step in range(q_cfg["max_steps"]):
-            action = agent.choose_action(state, episode)
-            next_state, reward, done = env.step(action)
-            agent.update(state, action, reward, next_state)
-            state = next_state
-            total_reward += reward
-            if done:
-                break
+        done = False
+        # Custom exploration: every 5th episode → 3 consecutive random actions
+        if (episode + 1) % 5 == 0:
+            for _ in range(3):
+                action = np.random.randint(0, 4)  # Random action (0-3, not 0-2!)
+                next_state, reward, done = env.step(action)
+                agent.update(state, action, reward, next_state)
+                state = next_state
+                total_reward += reward
+                if done:
+                    break
+        
+        # Continue with normal epsilon-greedy for the rest of the episode
+        if not done:  # only continue if goal not reached during forced exploration
+            for step in range(q_cfg["max_steps"]):
+                action = agent.choose_action(state, episode)
+                next_state, reward, done = env.step(action)
+                agent.update(state, action, reward, next_state)
+                state = next_state
+                total_reward += reward
+                if done:
+                    break
 
         agent.epsilon = max(q_cfg["epsilon_end"],
                             q_cfg["epsilon_start"] - episode / q_cfg["episodes"] * 0.8)
