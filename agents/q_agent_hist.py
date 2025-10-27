@@ -27,3 +27,13 @@ class QLearningAgentWithHistory(QLearningAgent):
             alpha_used = 0.15 if s in self.historical_states else self.alpha
             best_next = np.max(self.q_table[ns])
             self.q_table[s, a] += alpha_used * (r + self.gamma * best_next - self.q_table[s, a])
+
+    def update(self, state, action, reward, next_state):
+        """Override update to use higher learning rate for historical states."""
+        # Use α = 0.15 for states that appeared in historical data, otherwise use normal α
+        alpha_used = 0.15 if state in self.historical_states else self.alpha
+        
+        best_next = np.max(self.q_table[next_state])
+        self.q_table[state, action] += alpha_used * (
+            reward + self.gamma * best_next - self.q_table[state, action]
+        )
