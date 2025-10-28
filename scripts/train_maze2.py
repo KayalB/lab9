@@ -3,7 +3,7 @@ import pickle
 from tqdm import trange
 from env.maze_env import MazeEnvironment
 from agents.q_agent_hist import QLearningAgentWithHistory
-from utils.plot_utils import plot_rewards
+from utils.plot_utils import plot_rewards, plot_path_heatmap
 from config import CONFIG
 import os
 
@@ -55,17 +55,26 @@ def train_with_history():
     # 3️⃣ Continue training (500 episodes)
     print("🎯 Continuing training with historical initialization…")
     rewards = []
+    training_paths = []  # Collect paths during training for heatmap
+    
     for ep in trange(500):
         s = env.reset()
         total = 0
+        episode_path = [tuple(env.agent_pos)]  # Track path for this episode
+        
         for step in range(q_cfg["max_steps"]):
             a = agent.choose_action(s, ep)
             ns, r, done = env.step(a)
             agent.update(s, a, r, ns)
+            episode_path.append(tuple(env.agent_pos))
             s = ns
             total += r
             if done:
+                # Collect paths periodically during training (every 5 episodes)
+                if ep % 5 == 0:
+                    training_paths.append(episode_path)
                 break
+        
         agent.epsilon = max(q_cfg["epsilon_end"],
                             agent.epsilon - 0.8 / 500)
         rewards.append(total)
@@ -78,8 +87,10 @@ def train_with_history():
 
     # 4️⃣ Simple evaluation
     successes, total_steps = 0, 0
-    for _ in range(100):
+    
+    for episode_num in range(100):
         s = env.reset()
+        
         for step in range(q_cfg["max_steps"]):
             a = np.argmax(agent.q_table[s])
             ns, r, done = env.step(a)
@@ -92,6 +103,20 @@ def train_with_history():
     print(f"Success Rate = {successes}%")
     print(f"Average Steps = {total_steps / max(successes,1):.1f}")
     print("➡️ Compare this with Milestone 1 results in your report.")
+    
+    # Generate heatmap visualization from training exploration
+    if training_paths:
+        print("\n" + "="*50)
+        print("Generating training exploration heatmap...")
+        print("="*50)
+        plot_path_heatmap(
+            env, 
+            training_paths, 
+            "Maze 2 - Training Exploration Heatmap (w/ Historical Data)",
+            "plots/path_maze2.png"
+        )
+    else:
+        print("\nNo successful training paths found to visualize.")
 
 
 if __name__ == "__main__":
