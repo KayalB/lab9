@@ -2,7 +2,7 @@
 ================================================================================
                     MAZE LEARNING - PERFORMANCE COMPARISON
 ================================================================================
-Generated: 2025-10-27 16:50:59
+Generated: 2025-10-27 17:18:15
 Maze Configuration: 6x6 grid, 10.0% wall probability
 Minimum Possible Steps: 10
 ================================================================================
@@ -12,16 +12,21 @@ Metric                              Maze 1          Maze 2          Maze 3
 --------------------------------------------------------------------------------
 Method                              Q-Learning      Q-Learning+Hist DQN            
 Training Episodes                   1000            1000            1000           
-Training Time (seconds)             0.19            0.06            9.66           
+Training Time (seconds)             0.32            0.20            10.70          
+                                                                                   
+=== TRAINING STATISTICS ===                                                        
+Training Paths Collected            100             100             100            
+Total Training Steps                4964            3349            2122           
+Avg Steps per Training Path         49.64           33.49           21.22          
                                                                                    
 === EVALUATION RESULTS (100 test episodes) ===                                                
 Success Rate (%)                    100             100             100            
-Avg Steps to Goal                   10.00           10.00           10.01          
+Avg Steps to Goal                   10.00           10.00           10.00          
 Min Steps                           10              10              10             
-Max Steps                           10              10              11             
+Max Steps                           10              10              10             
 Median Steps                        10.00           10.00           10.00          
                                                                                    
-Avg Reward (last 100 episodes)      79.02           81.64           88.10          
+Avg Reward (last 100 episodes)      73.20           78.82           87.80          
 
 ================================================================================
 
@@ -31,7 +36,7 @@ ANALYSIS & INSIGHTS:
 • Lowest Avg Steps: 10.00 (Maze1) (Maze2) (Maze3)
 
 • Training Efficiency:
-  - Fastest training: Maze2 (0.06s)
+  - Fastest training: Maze2 (0.20s)
 
 • Method Comparison:
   - Maze 1 (Standard Q-Learning): Baseline with custom exploration strategy
