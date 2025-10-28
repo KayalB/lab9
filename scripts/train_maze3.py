@@ -3,7 +3,7 @@ from tqdm import trange
 import torch
 from env.maze_env import MazeEnvironment
 from agents.dqn_agent import DQNAgent
-from utils.plot_utils import plot_rewards
+from utils.plot_utils import plot_rewards, plot_path_heatmap
 from config import CONFIG
 import os
 
@@ -25,6 +25,7 @@ def train_dqn():
     episodes = 1000  # per spec  :contentReference[oaicite:4]{index=4}
     max_steps = 1000
     rewards = []
+    training_paths = []  # Collect paths during training for heatmap
 
     os.makedirs("data", exist_ok=True)
     os.makedirs("plots", exist_ok=True)
@@ -32,6 +33,7 @@ def train_dqn():
     for ep in trange(episodes):
         s = env.reset()
         total = 0
+        episode_path = [tuple(env.agent_pos)]  # Track path for this episode
 
         # Target net handling (freeze every 10th)
         agent.maybe_sync_target(ep)
@@ -41,10 +43,14 @@ def train_dqn():
             ns, r, done = env.step(a)
             agent.remember(s, a, r, ns, done)
             agent.update_model()
+            episode_path.append(tuple(env.agent_pos))
 
             s = ns
             total += r
             if done:
+                # Collect paths periodically during training (every 10 episodes)
+                if ep % 10 == 0:
+                    training_paths.append(episode_path)
                 break
 
         rewards.append(total)
@@ -57,8 +63,10 @@ def train_dqn():
     # ----- Evaluation (100 episodes, greedy) -----
     successes, total_steps = 0, 0
     agent.epsilon = 0.0
-    for _ in range(100):
+    
+    for episode_num in range(100):
         s = env.reset()
+        
         for step in range(max_steps):
             with torch.no_grad():
                 # greedy action from current policy
@@ -75,6 +83,27 @@ def train_dqn():
 
     avg_steps = (total_steps / successes) if successes > 0 else float('inf')
     print(f"Success Rate: {successes}%  |  Avg Steps: {avg_steps:.1f}")
+    print(f"Total episodes: 100")
+    print(f"Successful episodes: {successes}")
+    print(f"Total steps in successful episodes: {total_steps}")
+    print(f"Success Rate: {successes}%")
+    print(f"Average Steps (when successful): {avg_steps:.1f}")
+    print("Training maze walls:")
+    print(env.grid)
+    
+    # Generate heatmap visualization from training exploration
+    if training_paths:
+        print("\n" + "="*50)
+        print("Generating training exploration heatmap...")
+        print("="*50)
+        plot_path_heatmap(
+            env, 
+            training_paths, 
+            "Maze 3 - Training Exploration Heatmap (DQN)",
+            "plots/path_maze3.png"
+        )
+    else:
+        print("\nNo successful training paths found to visualize.")
 
 
 if __name__ == "__main__":

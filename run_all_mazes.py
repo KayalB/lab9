@@ -9,7 +9,7 @@ from env.maze_env import MazeEnvironment
 from agents.q_agent import QLearningAgent
 from agents.q_agent_hist import QLearningAgentWithHistory
 from agents.dqn_agent import DQNAgent
-from utils.plot_utils import plot_rewards
+from utils.plot_utils import plot_rewards, plot_path_heatmap
 from config import CONFIG
 from tqdm import trange
 import os
@@ -82,9 +82,12 @@ def train_maze1():
     agent = QLearningAgent(env, q_cfg["alpha"], q_cfg["gamma"], q_cfg["epsilon_start"])
 
     rewards = []
+    training_paths = []  # Collect paths during training for heatmap
+    
     for episode in trange(q_cfg["episodes"], desc="Training Maze 1"):
         state = env.reset()
         total_reward = 0
+        episode_path = [tuple(env.agent_pos)]  # Track path for this episode
 
         done = False
         # Custom exploration: every 5th episode → 3 consecutive random actions
@@ -93,6 +96,7 @@ def train_maze1():
                 action = np.random.randint(0, 4)
                 next_state, reward, done = env.step(action)
                 agent.update(state, action, reward, next_state)
+                episode_path.append(tuple(env.agent_pos))
                 state = next_state
                 total_reward += reward
                 if done:
@@ -104,10 +108,15 @@ def train_maze1():
                 action = agent.choose_action(state, episode)
                 next_state, reward, done = env.step(action)
                 agent.update(state, action, reward, next_state)
+                episode_path.append(tuple(env.agent_pos))
                 state = next_state
                 total_reward += reward
                 if done:
                     break
+
+        # Collect paths periodically during training (every 10 episodes)
+        if episode % 10 == 0 and done:
+            training_paths.append(episode_path)
 
         agent.epsilon = max(q_cfg["epsilon_end"],
                             q_cfg["epsilon_start"] - episode / q_cfg["episodes"] * 0.8)
@@ -115,6 +124,16 @@ def train_maze1():
 
     np.save("data/rewards_maze1.npy", rewards)
     plot_rewards(rewards, "Milestone 1 - Q-Learning Rewards", "plots/rewards_maze1.png")
+    
+    # Generate training exploration heatmap
+    if training_paths:
+        print("Generating training exploration heatmap for Maze 1...")
+        plot_path_heatmap(
+            env, 
+            training_paths, 
+            "Maze 1 - Training Exploration Heatmap",
+            "plots/path_maze1.png"
+        )
     
     training_time = time.time() - start_time
     
@@ -182,17 +201,25 @@ def train_maze2():
     # Continue training
     print("Continuing training with historical initialization…")
     rewards = []
+    training_paths = []  # Collect paths during training for heatmap
     continued_episodes = 500
+    
     for ep in trange(continued_episodes, desc="Training Maze 2"):
         s = env.reset()
         total = 0
+        episode_path = [tuple(env.agent_pos)]  # Track path for this episode
+        
         for step in range(q_cfg["max_steps"]):
             a = agent.choose_action(s, ep)
             ns, r, done = env.step(a)
             agent.update(s, a, r, ns)
+            episode_path.append(tuple(env.agent_pos))
             s = ns
             total += r
             if done:
+                # Collect paths periodically during training (every 5 episodes)
+                if ep % 5 == 0:
+                    training_paths.append(episode_path)
                 break
         agent.epsilon = max(q_cfg["epsilon_end"], agent.epsilon - 0.8 / continued_episodes)
         rewards.append(total)
@@ -201,6 +228,16 @@ def train_maze2():
 
     np.save("data/rewards_maze2.npy", rewards)
     plot_rewards(rewards, "Milestone 2 – Q-Learning w/ Historical Data", "plots/rewards_maze2.png")
+    
+    # Generate training exploration heatmap
+    if training_paths:
+        print("Generating training exploration heatmap for Maze 2...")
+        plot_path_heatmap(
+            env, 
+            training_paths, 
+            "Maze 2 - Training Exploration Heatmap (w/ Historical Data)",
+            "plots/path_maze2.png"
+        )
     
     training_time = time.time() - start_time
     
@@ -238,10 +275,12 @@ def train_maze3():
     episodes = 1000
     max_steps = 1000
     rewards = []
+    training_paths = []  # Collect paths during training for heatmap
 
     for ep in trange(episodes, desc="Training Maze 3"):
         s = env.reset()
         total = 0
+        episode_path = [tuple(env.agent_pos)]  # Track path for this episode
 
         agent.maybe_sync_target(ep)
 
@@ -250,10 +289,14 @@ def train_maze3():
             ns, r, done = env.step(a)
             agent.remember(s, a, r, ns, done)
             agent.update_model()
+            episode_path.append(tuple(env.agent_pos))
 
             s = ns
             total += r
             if done:
+                # Collect paths periodically during training (every 10 episodes)
+                if ep % 10 == 0:
+                    training_paths.append(episode_path)
                 break
 
         rewards.append(total)
@@ -261,6 +304,16 @@ def train_maze3():
 
     np.save("data/rewards_maze3.npy", rewards)
     plot_rewards(rewards, "Milestone 3 – DQN Rewards", "plots/rewards_maze3.png")
+    
+    # Generate training exploration heatmap
+    if training_paths:
+        print("Generating training exploration heatmap for Maze 3...")
+        plot_path_heatmap(
+            env, 
+            training_paths, 
+            "Maze 3 - Training Exploration Heatmap (DQN)",
+            "plots/path_maze3.png"
+        )
     
     training_time = time.time() - start_time
     
