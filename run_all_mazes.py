@@ -126,9 +126,10 @@ def train_maze1():
     plot_rewards(rewards, "Milestone 1 - Q-Learning Rewards", "plots/rewards_maze1.png")
     
     # Generate training exploration heatmap
+    training_stats = {}
     if training_paths:
         print("Generating training exploration heatmap for Maze 1...")
-        plot_path_heatmap(
+        training_stats = plot_path_heatmap(
             env, 
             training_paths, 
             "Maze 1 - Training Exploration Heatmap",
@@ -143,6 +144,7 @@ def train_maze1():
     results["training_time"] = training_time
     results["total_episodes"] = q_cfg["episodes"]
     results["avg_reward"] = np.mean(rewards[-100:])  # Last 100 episodes
+    results.update(training_stats)  # Add training statistics
     
     print(f"Maze 1 completed - Success Rate: {results['success_rate']}%, Avg Steps: {results['avg_steps']:.1f}")
     return results, env
@@ -230,9 +232,10 @@ def train_maze2():
     plot_rewards(rewards, "Milestone 2 – Q-Learning w/ Historical Data", "plots/rewards_maze2.png")
     
     # Generate training exploration heatmap
+    training_stats = {}
     if training_paths:
         print("Generating training exploration heatmap for Maze 2...")
-        plot_path_heatmap(
+        training_stats = plot_path_heatmap(
             env, 
             training_paths, 
             "Maze 2 - Training Exploration Heatmap (w/ Historical Data)",
@@ -247,6 +250,7 @@ def train_maze2():
     results["training_time"] = training_time
     results["total_episodes"] = total_training_episodes  # Total includes history collection (500) + continued training (500) = 1000
     results["avg_reward"] = np.mean(rewards[-100:])
+    results.update(training_stats)  # Add training statistics
     
     print(f"Maze 2 completed - Success Rate: {results['success_rate']}%, Avg Steps: {results['avg_steps']:.1f}")
     return results, env
@@ -306,9 +310,10 @@ def train_maze3():
     plot_rewards(rewards, "Milestone 3 – DQN Rewards", "plots/rewards_maze3.png")
     
     # Generate training exploration heatmap
+    training_stats = {}
     if training_paths:
         print("Generating training exploration heatmap for Maze 3...")
-        plot_path_heatmap(
+        training_stats = plot_path_heatmap(
             env, 
             training_paths, 
             "Maze 3 - Training Exploration Heatmap (DQN)",
@@ -324,6 +329,7 @@ def train_maze3():
     results["training_time"] = training_time
     results["total_episodes"] = episodes
     results["avg_reward"] = np.mean(rewards[-100:])
+    results.update(training_stats)  # Add training statistics
     
     print(f"Maze 3 completed - Success Rate: {results['success_rate']}%, Avg Steps: {results['avg_steps']:.1f}")
     return results, env
@@ -362,6 +368,20 @@ Minimum Possible Steps: {env.N + env.M - 2}
          f"{results_dict['maze1']['training_time']:.2f}", 
          f"{results_dict['maze2']['training_time']:.2f}", 
          f"{results_dict['maze3']['training_time']:.2f}"),
+        ("", "", "", ""),
+        ("=== TRAINING STATISTICS ===", "", "", ""),
+        ("Training Paths Collected", 
+         f"{results_dict['maze1'].get('total_training_paths', 'N/A')}", 
+         f"{results_dict['maze2'].get('total_training_paths', 'N/A')}", 
+         f"{results_dict['maze3'].get('total_training_paths', 'N/A')}"),
+        ("Total Training Steps", 
+         f"{results_dict['maze1'].get('total_training_steps', 'N/A')}", 
+         f"{results_dict['maze2'].get('total_training_steps', 'N/A')}", 
+         f"{results_dict['maze3'].get('total_training_steps', 'N/A')}"),
+        ("Avg Steps per Training Path", 
+         f"{results_dict['maze1'].get('avg_training_steps', 0):.2f}" if results_dict['maze1'].get('avg_training_steps') else "N/A", 
+         f"{results_dict['maze2'].get('avg_training_steps', 0):.2f}" if results_dict['maze2'].get('avg_training_steps') else "N/A", 
+         f"{results_dict['maze3'].get('avg_training_steps', 0):.2f}" if results_dict['maze3'].get('avg_training_steps') else "N/A"),
         ("", "", "", ""),
         ("=== EVALUATION RESULTS (100 test episodes) ===", "", "", ""),
         ("Success Rate (%)", 

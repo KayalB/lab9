@@ -203,3 +203,10 @@ def plot_path_heatmap(env, all_paths, title, save_path):
     print(f"Total paths analyzed: {len(all_paths)}")
     print(f"Total steps: {total_steps}")
     print(f"Average steps per path: {total_steps/len(all_paths):.1f}")
+    
+    # Return training statistics
+    return {
+        "total_training_paths": len(all_paths),
+        "total_training_steps": total_steps,
+        "avg_training_steps": total_steps/len(all_paths) if all_paths else 0
+    }
